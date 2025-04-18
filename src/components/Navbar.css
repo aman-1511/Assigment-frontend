@@ -55,12 +55,10 @@
   outline: none;
 }
 
-/* Update focus styles for accessibility */
+/* Update focus styles for accessibility - remove box outline, keep only underline */
 .nav-link:focus {
   color: #fff;
-  outline: 2px solid #3498db;
-  outline-offset: 3px;
-  border-radius: 2px;
+  outline: none;
 }
 
 .nav-link::after {
@@ -96,12 +94,10 @@
   padding: 0.5rem;
 }
 
-/* Update focus styles for navbar elements */
+/* Update focus styles for navbar elements - remove box outline */
 .navbar a:focus,
 .navbar button:focus {
-  outline: 2px solid #3498db;
-  outline-offset: 3px;
-  border-radius: 2px;
+  outline: none;
 }
 
 /* Responsive Media Queries */
