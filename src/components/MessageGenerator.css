@@ -1,0 +1,103 @@
+.message-generator-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.message-generator-container h1 {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.description {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.column {
+  flex: 1;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  border-color: #4d90fe;
+  outline: none;
+}
+
+.message-result {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.message-content {
+  flex: 1;
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+  white-space: pre-wrap;
+  min-height: 200px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.no-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  color: #666;
+  border: 1px dashed #ddd;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Fix for button layout */
+.message-result button {
+  width: fit-content;
+  align-self: flex-end;
+}
+
+@media (min-width: 768px) {
+  .row {
+    flex-direction: row;
+  }
+} 
