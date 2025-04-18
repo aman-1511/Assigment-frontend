@@ -5,12 +5,14 @@ interface MessageDisplayProps {
   message: string;
   loading: boolean;
   onCopy: () => void;
+  copySuccess?: boolean;
 }
 
 const MessageDisplay: React.FC<MessageDisplayProps> = ({ 
   message, 
   loading,
-  onCopy
+  onCopy,
+  copySuccess = false
 }) => {
   // Display message or appropriate placeholder based on state
   if (loading) {
@@ -30,12 +32,17 @@ const MessageDisplay: React.FC<MessageDisplayProps> = ({
       <div className="message-content">
         {message}
       </div>
-      <button 
-        className="btn"
-        onClick={onCopy}
-      >
-        Copy to Clipboard
-      </button>
+      <div className="copy-button-container">
+        <button 
+          className={`btn ${copySuccess ? 'btn-success' : ''}`}
+          onClick={onCopy}
+        >
+          {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
+        </button>
+        {copySuccess && (
+          <span className="copy-success-message">✓ Copied to clipboard</span>
+        )}
+      </div>
     </div>
   );
 };

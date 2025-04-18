@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { LinkedInProfile } from '../../types';
 import useForm from '../../hooks/useForm';
 import useApi from '../../hooks/useApi';
@@ -20,8 +20,10 @@ const initialFormState: LinkedInProfile = {
 
 const MessageGenerator: React.FC = () => {
   const [message, setMessage] = useState<string>('');
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const { formData, handleChange } = useForm<LinkedInProfile>(initialFormState);
   const messageApi = useApi<{ message: string }, LinkedInProfile>(generatePersonalizedMessage);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
   // Handle form submission
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -41,16 +43,59 @@ const MessageGenerator: React.FC = () => {
     }
   }, [formData, messageApi]);
 
-  // Copy message to clipboard
+  // Copy message to clipboard with fallback methods
   const copyToClipboard = useCallback(() => {
-    navigator.clipboard.writeText(message)
-      .then(() => {
-        alert('Message copied to clipboard!');
-      })
-      .catch(err => {
-        console.error('Failed to copy message: ', err);
-      });
+    setCopySuccess(false);
+    
+    // Modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(message)
+        .then(() => {
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy using Clipboard API: ', err);
+          fallbackCopyToClipboard();
+        });
+    } else {
+      fallbackCopyToClipboard();
+    }
   }, [message]);
+  
+  // Fallback method using document.execCommand
+  const fallbackCopyToClipboard = () => {
+    try {
+      // Create a temporary textarea element to hold the text
+      const textarea = document.createElement('textarea');
+      textarea.value = message;
+      
+      // Make the textarea out of viewport
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-999999px';
+      textarea.style.top = '-999999px';
+      document.body.appendChild(textarea);
+      
+      // Select and copy
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand('copy');
+      
+      // Clean up
+      document.body.removeChild(textarea);
+      
+      if (success) {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } else {
+        console.error('Failed to copy using execCommand');
+        alert('Copy failed. Please try selecting the text and copying manually (Ctrl+C/Cmd+C).');
+      }
+    } catch (err) {
+      console.error('Fallback copy method failed: ', err);
+      alert('Copy failed. Please try selecting the text and copying manually (Ctrl+C/Cmd+C).');
+    }
+  };
 
   return (
     <div className="message-generator-container">
@@ -81,6 +126,7 @@ const MessageGenerator: React.FC = () => {
               message={message} 
               loading={messageApi.loading}
               onCopy={copyToClipboard}
+              copySuccess={copySuccess}
             />
           </div>
         </div>

@@ -17,10 +17,10 @@ const CampaignForm: React.FC = () => {
     accountIDs: [],
   });
 
-  // Check if we're in edit mode
+  
   const isEditMode = !!id;
 
-  // Fetch campaign data if in edit mode
+  
   useEffect(() => {
     if (isEditMode) {
       fetchCampaign();

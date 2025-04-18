@@ -59,10 +59,27 @@
   text-align: center;
 }
 
-/* Fix for button layout */
+/* Fix for button layout - UPDATED */
 .message-result button {
-  width: fit-content;
+  transition: background-color 0.3s;
+}
+
+.copy-button-container {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   align-self: flex-end;
+}
+
+.copy-success-message {
+  color: #28a745;
+  font-size: 0.9rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Responsive Media Queries */
