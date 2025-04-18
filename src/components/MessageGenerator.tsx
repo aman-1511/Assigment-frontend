@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { generatePersonalizedMessage } from '../api';
 import { LinkedInProfile } from '../types';
 import './MessageGenerator.css';
+
+// Form field configuration to reduce redundancy
+const formFields = [
+  { id: 'name', label: 'Name*', type: 'text', required: true },
+  { id: 'job_title', label: 'Job Title*', type: 'text', required: true },
+  { id: 'company', label: 'Company*', type: 'text', required: true },
+  { id: 'location', label: 'Location', type: 'text', required: false },
+  { id: 'summary', label: 'Profile Summary', type: 'textarea', required: false, rows: 4 }
+];
 
 const MessageGenerator: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -16,28 +25,32 @@ const MessageGenerator: React.FC = () => {
   });
 
   // Handle form input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Reset previous states
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
-      
       // Validate required fields
-      if (!formData.name || !formData.job_title || !formData.company) {
-        setError('Name, job title, and company are required');
-        return;
+      const requiredFields = ['name', 'job_title', 'company'] as const;
+      for (const field of requiredFields) {
+        if (!formData[field]?.trim()) {
+          throw new Error('Name, job title, and company are required');
+        }
       }
       
       const response = await generatePersonalizedMessage(formData);
       setMessage(response.message);
     } catch (err) {
-      setError('Failed to generate personalized message');
+      setError(err instanceof Error ? err.message : 'Failed to generate personalized message');
       console.error(err);
     } finally {
       setLoading(false);
@@ -45,7 +58,7 @@ const MessageGenerator: React.FC = () => {
   };
 
   // Copy message to clipboard
-  const copyToClipboard = () => {
+  const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(message)
       .then(() => {
         alert('Message copied to clipboard!');
@@ -53,7 +66,35 @@ const MessageGenerator: React.FC = () => {
       .catch(err => {
         console.error('Failed to copy message: ', err);
       });
-  };
+  }, [message]);
+
+  // Render form input field
+  const renderField = (field: typeof formFields[0]) => (
+    <div className="form-group" key={field.id}>
+      <label htmlFor={field.id}>{field.label}</label>
+      {field.type === 'textarea' ? (
+        <textarea
+          id={field.id}
+          name={field.id}
+          className="form-control"
+          value={formData[field.id as keyof LinkedInProfile] as string}
+          onChange={handleChange}
+          required={field.required}
+          rows={field.rows}
+        />
+      ) : (
+        <input
+          type={field.type}
+          id={field.id}
+          name={field.id}
+          className="form-control"
+          value={formData[field.id as keyof LinkedInProfile] as string}
+          onChange={handleChange}
+          required={field.required}
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className="message-generator-container">
@@ -69,68 +110,7 @@ const MessageGenerator: React.FC = () => {
           <div className="card">
             <h2>LinkedIn Profile Data</h2>
             <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="name">Name*</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className="form-control"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="job_title">Job Title*</label>
-                <input
-                  type="text"
-                  id="job_title"
-                  name="job_title"
-                  className="form-control"
-                  value={formData.job_title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="company">Company*</label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  className="form-control"
-                  value={formData.company}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="location">Location</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  className="form-control"
-                  value={formData.location}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="summary">Profile Summary</label>
-                <textarea
-                  id="summary"
-                  name="summary"
-                  className="form-control"
-                  value={formData.summary}
-                  onChange={handleChange}
-                  rows={4}
-                />
-              </div>
+              {formFields.map(renderField)}
               
               <button 
                 type="submit" 

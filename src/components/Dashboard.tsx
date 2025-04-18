@@ -1,8 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { getCampaigns, deleteCampaign, updateCampaign } from '../api';
 import { Campaign, CampaignStatus } from '../types';
 import './Dashboard.css';
+
+// Extracted campaign card component for better performance
+const CampaignCard = memo(({ 
+  campaign, 
+  onToggleStatus, 
+  onDelete 
+}: { 
+  campaign: Campaign; 
+  onToggleStatus: (campaign: Campaign) => void; 
+  onDelete: (id: string) => void; 
+}) => {
+  return (
+    <div className="campaign-card">
+      <div className="campaign-info">
+        <h2>{campaign.name}</h2>
+        <p>{campaign.description}</p>
+        <div className="campaign-stats">
+          <span>Leads: {campaign.leads.length}</span>
+          <span>Accounts: {campaign.accountIDs.length}</span>
+          <span className={`status ${campaign.status}`}>
+            Status: {campaign.status.toUpperCase()}
+          </span>
+        </div>
+      </div>
+      <div className="campaign-actions">
+        <button
+          className={`btn ${campaign.status === CampaignStatus.ACTIVE ? 'btn-danger' : 'btn-success'}`}
+          onClick={() => onToggleStatus(campaign)}
+        >
+          {campaign.status === CampaignStatus.ACTIVE ? 'Deactivate' : 'Activate'}
+        </button>
+        <Link to={`/campaign/edit/${campaign._id}`} className="btn">
+          Edit
+        </Link>
+        <button
+          className="btn btn-danger"
+          onClick={() => onDelete(campaign._id)}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+});
 
 const Dashboard: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -15,7 +59,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   // Get all campaigns
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getCampaigns();
@@ -27,10 +71,10 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Handle campaign deletion
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (window.confirm('Are you sure you want to delete this campaign?')) {
       try {
         await deleteCampaign(id);
@@ -40,10 +84,10 @@ const Dashboard: React.FC = () => {
         console.error(err);
       }
     }
-  };
+  }, [fetchCampaigns]);
 
   // Toggle campaign status between ACTIVE and INACTIVE
-  const toggleStatus = async (campaign: Campaign) => {
+  const toggleStatus = useCallback(async (campaign: Campaign) => {
     try {
       const newStatus = campaign.status === CampaignStatus.ACTIVE 
         ? CampaignStatus.INACTIVE 
@@ -55,7 +99,7 @@ const Dashboard: React.FC = () => {
       setError('Failed to update campaign status');
       console.error(err);
     }
-  };
+  }, [fetchCampaigns]);
 
   if (loading) {
     return <div className="loading">Loading campaigns...</div>;
@@ -79,36 +123,12 @@ const Dashboard: React.FC = () => {
       ) : (
         <div className="campaign-list">
           {campaigns.map((campaign) => (
-            <div key={campaign._id} className="campaign-card">
-              <div className="campaign-info">
-                <h2>{campaign.name}</h2>
-                <p>{campaign.description}</p>
-                <div className="campaign-stats">
-                  <span>Leads: {campaign.leads.length}</span>
-                  <span>Accounts: {campaign.accountIDs.length}</span>
-                  <span className={`status ${campaign.status}`}>
-                    Status: {campaign.status.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-              <div className="campaign-actions">
-                <button
-                  className={`btn ${campaign.status === CampaignStatus.ACTIVE ? 'btn-danger' : 'btn-success'}`}
-                  onClick={() => toggleStatus(campaign)}
-                >
-                  {campaign.status === CampaignStatus.ACTIVE ? 'Deactivate' : 'Activate'}
-                </button>
-                <Link to={`/campaign/edit/${campaign._id}`} className="btn">
-                  Edit
-                </Link>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleDelete(campaign._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+            <CampaignCard
+              key={campaign._id}
+              campaign={campaign}
+              onToggleStatus={toggleStatus}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}

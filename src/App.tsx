@@ -7,9 +7,9 @@ import {
   Route 
 } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Dashboard from './components/Dashboard';
-import CampaignForm from './components/CampaignForm';
-import MessageGenerator from './components/MessageGenerator';
+import Dashboard from './pages/Dashboard';
+import CampaignForm from './pages/CampaignForm';
+import MessageGenerator from './pages/MessageGenerator';
 import './styles/global.css';
 
 // Root layout component with navbar

@@ -4,6 +4,15 @@ export enum CampaignStatus {
   DELETED = 'deleted'
 }
 
+export interface Lead {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  jobTitle: string;
+  notes: string;
+}
+
 export interface Campaign {
   _id: string;
   name: string;
